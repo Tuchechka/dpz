@@ -1,7 +1,31 @@
-**Variant: 10**
+# documentation-lab-2
 
-**Task: WordPress**
-1. Намалюйте use-case діаграму реєстрації нового користувача та створення плейлиста 
-2. Намалюйте діаграму класів, щоб представити множину об’єктів, які потрібні для створення плейлиста, його програвання та збереження статистики прослуховування пісень
-3. Намалюйте діаграму активності зняття оплати в залежності від типу підписки користувачем (відобразити всі типи підписки)
-4. Намалюйте sequence діаграму, яка показує яким чином зчитується інформація про плейлист користувача та записується статистика про прослуховування кожної пісні 
+**Variant:** 10 — WordPress  
+**Tech stack:** Python · FastAPI · SQLAlchemy 2.x · Pydantic v2 · SQLite
+
+Lab 2 — серверна частина з трирівневою архітектурою.
+
+## Архітектура
+
+- **data_access** — ORM-моделі, репозиторії, CSV-читач
+- **business_logic** — сервіси та DTO; залежить лише від інтерфейсів DAL
+- **presentation** — FastAPI роутери (поки заглушки)
+
+Зв'язок між шарами реалізовано через абстрактні базові класи (`abc.ABC`) 
+і ін'єкцію залежностей через FastAPI `Depends`. Детальніше — у [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+## Запуск
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate на Windows
+pip install -r requirements.txt
+
+python -m generators.generate_csv  
+uvicorn app.main:app --reload     
+```
+
+Після запуску:
+- API: http://localhost:8000
+- Документація: http://localhost:8000/docs
+- БД: `wordpress.db` (SQLite, у корені)
