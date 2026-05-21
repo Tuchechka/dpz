@@ -1,31 +1,46 @@
-# documentation-lab-2
+# documentation-lab-3
 
 **Variant:** 10 — WordPress  
-**Tech stack:** Python · FastAPI · SQLAlchemy 2.x · Pydantic v2 · SQLite
+**Pattern:** MVC over the 3-layer architecture from Lab 2  
+**Tech stack:** Python · FastAPI · SQLAlchemy 2.x · Pydantic v2 · Jinja2 · Bootstrap 5 · SQLite
 
-Lab 2 — серверна частина з трирівневою архітектурою.
+Lab 3 — веб-додаток з MVC-структурою, що реалізує CRUD на сутності **Post**.
 
-## Архітектура
+## MVC у проекті
 
-- **data_access** — ORM-моделі, репозиторії, CSV-читач
-- **business_logic** — сервіси та DTO; залежить лише від інтерфейсів DAL
-- **presentation** — FastAPI роутери (поки заглушки)
+- **Model** — ORM-моделі (`app/data_access/models.py`) + сервіси (`app/business_logic/services.py`)
+- **View** — Jinja2-шаблони (`app/presentation/templates/`)
+- **Controller** — FastAPI-роутер (`app/presentation/controllers.py`)
 
-Зв'язок між шарами реалізовано через абстрактні базові класи (`abc.ABC`) 
-і ін'єкцію залежностей через FastAPI `Depends`. Детальніше — у [ARCHITECTURE.md](./ARCHITECTURE.md).
+Архітектура трирівнева (з Lab 2): Data Access → Business Logic → Presentation,
+з інверсією залежностей через інтерфейси (ABC) і DI у `main.py`.
+
+## Основна сутність — Post
+
+CRUD-операції доступні через UI:
+
+| URL | Метод | Дія |
+|---|---|---|
+| `/posts` | GET | Список постів |
+| `/posts/{id}` | GET | Перегляд посту |
+| `/posts/new` | GET | Форма створення |
+| `/posts/new` | POST | Створення |
+| `/posts/{id}/edit` | GET | Форма редагування |
+| `/posts/{id}/edit` | POST | Збереження змін |
+| `/posts/{id}/delete` | GET | Підтвердження видалення |
+| `/posts/{id}/delete` | POST | Видалення |
 
 ## Запуск
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate на Windows
+.venv\Scripts\Activate.ps1            # Windows
+# або: source .venv/bin/activate     # Linux/Mac
+
 pip install -r requirements.txt
 
-python -m generators.generate_csv  
-uvicorn app.main:app --reload     
+python -m generators.generate_csv     # створює wordpress_data.csv
+uvicorn app.main:app --reload         # сервер + сід БД
 ```
 
-Після запуску:
-- API: http://localhost:8000
-- Документація: http://localhost:8000/docs
-- БД: `wordpress.db` (SQLite, у корені)
+Відкрити: http://localhost:8000/posts

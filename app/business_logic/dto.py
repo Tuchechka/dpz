@@ -1,7 +1,7 @@
 """Pydantic DTOs для передачі даних між шарами."""
 from __future__ import annotations
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -17,7 +17,6 @@ class CsvRowDto(BaseModel):
     """
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    # Post fields
     post_external_id: str
     post_title: str
     post_slug: str
@@ -25,21 +24,17 @@ class CsvRowDto(BaseModel):
     post_status: str = "published"
     post_published_at: Optional[datetime] = None
 
-    # Author fields
     author_username: str
     author_email: str
     author_role: str = "author"
 
-    # Categories and tags (pipe-separated, наприклад "Tech|Programming")
     categories: str = ""
     tags: str = ""
 
-    # Media (одне медіа на рядок; необов'язково)
     media_filename: Optional[str] = None
     media_url: Optional[str] = None
     media_mime_type: Optional[str] = None
 
-    # Comment (необов'язково)
     comment_author_name: Optional[str] = None
     comment_author_email: Optional[str] = None
     comment_content: Optional[str] = None
@@ -52,7 +47,7 @@ class CsvRowDto(BaseModel):
 class UserCreateDto(BaseModel):
     username: str
     email: str
-    password_hash: str = "stub_hash"  # реальне хешування -- не фокус лаби
+    password_hash: str = "stub_hash"
     role: str = "author"
 
 
@@ -99,3 +94,67 @@ class MediaCreateDto(BaseModel):
     url: str
     mime_type: str
     size: int = 0
+
+
+# ============================================================
+# DTO для оновлення (Lab 3)
+# ============================================================
+
+class PostUpdateDto(BaseModel):
+    """Для редагування посту через UI -- не змінює author_id."""
+    title: str
+    slug: str
+    body: str
+    status: str = "draft"
+    allow_comments: bool = True
+    published_at: Optional[datetime] = None
+
+
+# ============================================================
+# DTOs для читання (Lab 3) -- передаються у Jinja2 шаблони
+# ============================================================
+
+class CommentReadDto(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    author_name: str
+    author_email: str
+    content: str
+    created_at: datetime
+    approved: bool
+
+
+class PostReadDto(BaseModel):
+    """Для списку постів -- зведена інфо."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    slug: str
+    status: str
+    published_at: Optional[datetime] = None
+    created_at: datetime
+    author_username: str
+    comment_count: int = 0
+    category_names: List[str] = []
+    tag_names: List[str] = []
+
+
+class PostDetailDto(BaseModel):
+    """Для деталі посту -- розширена інфо з коментарями."""
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    slug: str
+    body: str
+    status: str
+    published_at: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    allow_comments: bool
+    author_username: str
+    category_names: List[str] = []
+    tag_names: List[str] = []
+    comments: List[CommentReadDto] = []

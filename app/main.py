@@ -1,7 +1,8 @@
-"""FastAPI entry point: DI wiring + startup seeding."""
+"""FastAPI entry point: DI wiring + startup seeding + MVC routers."""
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 
 from app.business_logic.services import ContentSeedingService
 from app.common.constants import CSV_FILE_PATH
@@ -17,7 +18,8 @@ from app.data_access.repositories import (
     UserRepository,
 )
 from app.database import Base, SessionLocal, engine
-from app.presentation.routers import router
+from app.presentation.controllers import router as posts_router
+from app.presentation.routers import router as utility_router
 
 log = get_logger(__name__)
 
@@ -35,7 +37,6 @@ def _seed_database() -> None:
 
     db = SessionLocal()
     try:
-        # === DI: підставляємо конкретні реалізації в інтерфейси ===
         service = ContentSeedingService(
             csv_reader=CsvReader(),
             user_repo=UserRepository(db),
@@ -45,7 +46,6 @@ def _seed_database() -> None:
             post_repo=PostRepository(db),
             comment_repo=CommentRepository(db),
         )
-        # === Викликаємо бізнес-операцію ===
         result = service.seed(CSV_FILE_PATH)
         db.commit()
         log.info(f"Seed completed: {result.model_dump()}")
@@ -64,11 +64,8 @@ def _seed_database() -> None:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     log.info("Starting up...")
-
-    # 1. Створюємо таблиці (якщо їх немає)
     Base.metadata.create_all(engine)
 
-    # 2. Заповнюємо БД -- але лише якщо ще не заповнена
     db = SessionLocal()
     try:
         existing = UserRepository(db).count()
@@ -90,10 +87,17 @@ async def lifespan(app: FastAPI):
 # ============================================================
 
 app = FastAPI(
-    title="WordPress Documentation Lab",
-    description="Variant 10 -- Lab 2 (трирівнева архітектура з DI)",
+    title="WordPress MVC App",
+    description="Variant 10 -- Lab 3 (MVC over the 3-layer architecture from Lab 2)",
     version="1.0.0",
     lifespan=lifespan,
 )
 
-app.include_router(router)
+app.include_router(utility_router)
+app.include_router(posts_router)
+
+
+@app.get("/")
+def root():
+    """Корінь -- редірект на список постів."""
+    return RedirectResponse(url="/posts")

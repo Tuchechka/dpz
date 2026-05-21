@@ -1,8 +1,8 @@
 """SQLAlchemy-реалізації репозиторіїв."""
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from app.business_logic.dto import (
     CategoryCreateDto,
@@ -10,6 +10,7 @@ from app.business_logic.dto import (
     MediaCreateDto,
     PageCreateDto,
     PostCreateDto,
+    PostUpdateDto,
     TagCreateDto,
     UserCreateDto,
 )
@@ -46,10 +47,18 @@ class UserRepository(IUserRepository):
             select(User).where(User.email == email)
         ).scalar_one_or_none()
 
+    def get_by_id(self, user_id: int) -> Optional[User]:
+        return self._session.get(User, user_id)
+
+    def get_first(self) -> Optional[User]:
+        return self._session.execute(
+            select(User).order_by(User.id).limit(1)
+        ).scalar_one_or_none()
+
     def create(self, dto: UserCreateDto) -> User:
         user = User(**dto.model_dump())
         self._session.add(user)
-        self._session.flush()  # отримати user.id без commit
+        self._session.flush()
         return user
 
     def count(self) -> int:
@@ -134,23 +143,59 @@ class MediaRepository(IMediaRepository):
 
 
 # ============================================================
-# Post
+# Post -- розширений для CRUD (Lab 3)
 # ============================================================
 
 class PostRepository(IPostRepository):
     def __init__(self, session: Session):
         self._session = session
 
+    def get_by_id(self, post_id: int) -> Optional[Post]:
+        return self._session.execute(
+            select(Post)
+            .where(Post.id == post_id)
+            .options(
+                selectinload(Post.author),
+                selectinload(Post.categories),
+                selectinload(Post.tags),
+                selectinload(Post.comments),
+            )
+        ).scalar_one_or_none()
+
     def get_by_slug(self, slug: str) -> Optional[Post]:
         return self._session.execute(
             select(Post).where(Post.slug == slug)
         ).scalar_one_or_none()
+
+    def list_all(self, limit: int = 50, offset: int = 0) -> List[Post]:
+        return list(self._session.execute(
+            select(Post)
+            .options(
+                selectinload(Post.author),
+                selectinload(Post.categories),
+                selectinload(Post.tags),
+                selectinload(Post.comments),
+            )
+            .order_by(Post.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        ).scalars())
 
     def create(self, dto: PostCreateDto) -> Post:
         post = Post(**dto.model_dump())
         self._session.add(post)
         self._session.flush()
         return post
+
+    def update(self, post: Post, dto: PostUpdateDto) -> Post:
+        for field, value in dto.model_dump().items():
+            setattr(post, field, value)
+        self._session.flush()
+        return post
+
+    def delete(self, post: Post) -> None:
+        self._session.delete(post)
+        self._session.flush()
 
     def count(self) -> int:
         return self._session.execute(

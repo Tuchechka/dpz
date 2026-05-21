@@ -1,18 +1,25 @@
-"""Реалізація сервісу seeding'у."""
+"""Реалізації сервісів бізнес-логіки."""
 from pathlib import Path
 from typing import List, Optional
+
+from sqlalchemy.orm import Session
 
 from app.business_logic.dto import (
     CategoryCreateDto,
     CommentCreateDto,
+    CommentReadDto,
     CsvRowDto,
     MediaCreateDto,
     PostCreateDto,
+    PostDetailDto,
+    PostReadDto,
+    PostUpdateDto,
     TagCreateDto,
     UserCreateDto,
 )
 from app.business_logic.interfaces import (
     IContentSeedingService,
+    IPostService,
     SeedingResult,
 )
 from app.common.logger import get_logger
@@ -30,11 +37,12 @@ from app.data_access.models import Category, Media, Post, Tag, User
 log = get_logger(__name__)
 
 
+# ============================================================
+# ContentSeedingService (з Lab 2 -- без змін)
+# ============================================================
+
 class ContentSeedingService(IContentSeedingService):
-    """
-    Заповнює БД даними з CSV.
-    Залежить лише від інтерфейсів DAL -- не від конкретних реалізацій.
-    """
+    """Заповнює БД даними з CSV. Залежить лише від інтерфейсів DAL."""
 
     def __init__(
         self,
@@ -54,10 +62,6 @@ class ContentSeedingService(IContentSeedingService):
         self._posts = post_repo
         self._comments = comment_repo
 
-    # ============================================================
-    # Публічний API
-    # ============================================================
-
     def seed(self, csv_path: Path) -> SeedingResult:
         log.info(f"Starting seed from {csv_path}")
         rows = self._csv.read(csv_path)
@@ -67,7 +71,6 @@ class ContentSeedingService(IContentSeedingService):
                 self._process_row(row)
             except Exception as e:
                 log.error(f"Row {i} failed: {e}")
-
             if i % 100 == 0:
                 log.info(f"Processed {i}/{len(rows)} rows")
 
@@ -82,34 +85,15 @@ class ContentSeedingService(IContentSeedingService):
         log.info(f"Seeding done: {result.model_dump()}")
         return result
 
-    # ============================================================
-    # Обробка одного рядка
-    # ============================================================
-
     def _process_row(self, row: CsvRowDto) -> None:
-        # 1. Автор (дедуплікація за email)
         user = self._get_or_create_user(row)
-
-        # 2. Категорії та теги (дедуплікація за slug)
         categories = self._get_or_create_categories(row.categories)
         tags = self._get_or_create_tags(row.tags)
-
-        # 3. Медіа (дедуплікація за url)
         media = self._get_or_create_media(row)
-
-        # 4. Пост (дедуплікація за slug)
         post = self._get_or_create_post(row, author_id=user.id)
-
-        # 5. Прив'язка M:N зв'язків
         self._attach_relationships(post, categories, tags, media)
-
-        # 6. Коментар (якщо є)
         if row.comment_content:
             self._create_comment(row, post_id=post.id)
-
-    # ============================================================
-    # Helpers: find-or-create
-    # ============================================================
 
     def _get_or_create_user(self, row: CsvRowDto) -> User:
         user = self._users.get_by_email(row.author_email)
@@ -202,16 +186,117 @@ class ContentSeedingService(IContentSeedingService):
             post_id=post_id,
         ))
 
-    # ============================================================
-    # Utils
-    # ============================================================
-
     @staticmethod
     def _slugify(name: str) -> str:
-        """Перетворює 'Web Development' -> 'web-development'."""
         return (
             name.lower()
             .replace(" ", "-")
             .replace("_", "-")
             .replace("/", "-")
+        )
+
+
+# ============================================================
+# PostService -- CRUD для постів (Lab 3)
+# ============================================================
+
+class PostService(IPostService):
+    """Сервіс CRUD-операцій з постами для MVC controllers."""
+
+    def __init__(
+        self,
+        post_repo: IPostRepository,
+        user_repo: IUserRepository,
+        session: Session,
+    ):
+        self._posts = post_repo
+        self._users = user_repo
+        self._session = session
+
+    # ---- READ ----
+
+    def list_posts(self, limit: int = 50, offset: int = 0) -> List[PostReadDto]:
+        posts = self._posts.list_all(limit=limit, offset=offset)
+        return [self._to_read_dto(p) for p in posts]
+
+    def get_post(self, post_id: int) -> Optional[PostDetailDto]:
+        post = self._posts.get_by_id(post_id)
+        if not post:
+            return None
+        return self._to_detail_dto(post)
+
+    def count_posts(self) -> int:
+        return self._posts.count()
+
+    # ---- WRITE ----
+
+    def create_post(self, dto: PostCreateDto) -> int:
+        post = self._posts.create(dto)
+        self._session.commit()
+        log.info(f"Created post id={post.id}, slug={post.slug}")
+        return post.id
+
+    def update_post(self, post_id: int, dto: PostUpdateDto) -> bool:
+        post = self._posts.get_by_id(post_id)
+        if not post:
+            return False
+        self._posts.update(post, dto)
+        self._session.commit()
+        log.info(f"Updated post id={post_id}")
+        return True
+
+    def delete_post(self, post_id: int) -> bool:
+        post = self._posts.get_by_id(post_id)
+        if not post:
+            return False
+        self._posts.delete(post)
+        self._session.commit()
+        log.info(f"Deleted post id={post_id}")
+        return True
+
+    # ---- mapping helpers (ORM -> DTO) ----
+
+    def _to_read_dto(self, post: Post) -> PostReadDto:
+        return PostReadDto(
+            id=post.id,
+            title=post.title,
+            slug=post.slug,
+            status=post.status,
+            published_at=post.published_at,
+            created_at=post.created_at,
+            author_username=post.author.username if post.author else "(deleted)",
+            comment_count=len(post.comments),
+            category_names=[c.name for c in post.categories],
+            tag_names=[t.name for t in post.tags],
+        )
+
+    def _to_detail_dto(self, post: Post) -> PostDetailDto:
+        return PostDetailDto(
+            id=post.id,
+            title=post.title,
+            slug=post.slug,
+            body=post.body,
+            status=post.status,
+            published_at=post.published_at,
+            created_at=post.created_at,
+            updated_at=post.updated_at,
+            allow_comments=post.allow_comments,
+            author_username=post.author.username if post.author else "(deleted)",
+            category_names=[c.name for c in post.categories],
+            tag_names=[t.name for t in post.tags],
+            comments=[
+                CommentReadDto(
+                    id=c.id,
+                    author_name=c.author_name,
+                    author_email=c.author_email,
+                    content=c.content,
+                    created_at=c.created_at,
+                    approved=c.approved,
+                )
+                for c in sorted(
+                    post.comments,
+                    key=lambda c: c.created_at,
+                    reverse=True,
+                )
+            ],
         )

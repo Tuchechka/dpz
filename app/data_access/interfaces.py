@@ -3,6 +3,17 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import List, Optional
 
+from app.business_logic.dto import (
+    CategoryCreateDto,
+    CommentCreateDto,
+    CsvRowDto,
+    MediaCreateDto,
+    PageCreateDto,
+    PostCreateDto,
+    PostUpdateDto,
+    TagCreateDto,
+    UserCreateDto,
+)
 from app.data_access.models import (
     Category,
     Comment,
@@ -11,16 +22,6 @@ from app.data_access.models import (
     Post,
     Tag,
     User,
-)
-from app.business_logic.dto import (
-    CategoryCreateDto,
-    CommentCreateDto,
-    CsvRowDto,
-    MediaCreateDto,
-    PageCreateDto,
-    PostCreateDto,
-    TagCreateDto,
-    UserCreateDto,
 )
 
 
@@ -33,7 +34,6 @@ class ICsvReader(ABC):
 
     @abstractmethod
     def read(self, path: Path) -> List[CsvRowDto]:
-        """Зчитує файл, повертає список валідованих DTO."""
         ...
 
 
@@ -42,10 +42,17 @@ class ICsvReader(ABC):
 # ============================================================
 
 class IUserRepository(ABC):
-    """Контракт репозиторію користувачів."""
-
     @abstractmethod
     def get_by_email(self, email: str) -> Optional[User]:
+        ...
+
+    @abstractmethod
+    def get_by_id(self, user_id: int) -> Optional[User]:
+        ...
+
+    @abstractmethod
+    def get_first(self) -> Optional[User]:
+        """Повертає першого користувача (для дефолтного автора в UI)."""
         ...
 
     @abstractmethod
@@ -100,12 +107,30 @@ class IMediaRepository(ABC):
 
 
 class IPostRepository(ABC):
+    """Розширено для CRUD (Lab 3)."""
+
+    @abstractmethod
+    def get_by_id(self, post_id: int) -> Optional[Post]:
+        ...
+
     @abstractmethod
     def get_by_slug(self, slug: str) -> Optional[Post]:
         ...
 
     @abstractmethod
+    def list_all(self, limit: int = 50, offset: int = 0) -> List[Post]:
+        ...
+
+    @abstractmethod
     def create(self, dto: PostCreateDto) -> Post:
+        ...
+
+    @abstractmethod
+    def update(self, post: Post, dto: PostUpdateDto) -> Post:
+        ...
+
+    @abstractmethod
+    def delete(self, post: Post) -> None:
         ...
 
     @abstractmethod
