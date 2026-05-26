@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Delete: {{ post.title }}{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="/posts/{{ post.id }}" class="text-decoration-none">← Back to post</a>
+</div>
+
+<div class="alert alert-danger">
+    <h3>⚠️ Delete this post?</h3>
+    <p>You are about to delete the post:</p>
+    <ul>
+        <li><strong>{{ post.title }}</strong></li>
+        <li>Slug: <code>{{ post.slug }}</code></li>
+        <li>Author: {{ post.author_username }}</li>
+        <li><strong>{{ post.comments|length }}</strong> comments will also be deleted (cascade).</li>
+    </ul>
+    <p>This action <strong>cannot be undone</strong>.</p>
+</div>
+
+<form method="POST" action="/posts/{{ post.id }}/delete">
+    <button type="submit" class="btn btn-danger">Yes, delete it</button>
+    <a href="/posts/{{ post.id }}" class="btn btn-outline-secondary">Cancel</a>
+</form>
+{% endblock %}

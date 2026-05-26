@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Posts — WordPress MVC{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Posts <small class="text-muted fs-6">({{ total }} total)</small></h1>
+    <a href="/posts/new" class="btn btn-primary">+ New Post</a>
+</div>
+
+{% if posts %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Status</th>
+                <th>Categories</th>
+                <th class="text-center">Comments</th>
+                <th>Created</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for post in posts %}
+            <tr>
+                <td>
+                    <a href="/posts/{{ post.id }}" class="text-decoration-none">
+                        <strong>{{ post.title }}</strong>
+                    </a>
+                    <br>
+                    <small class="text-muted">/{{ post.slug }}</small>
+                </td>
+                <td>{{ post.author_username }}</td>
+                <td>
+                    {% if post.status == "published" %}
+                        <span class="badge bg-success">Published</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ post.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% for cat in post.category_names %}
+                        <span class="badge bg-info text-dark">{{ cat }}</span>
+                    {% endfor %}
+                </td>
+                <td class="text-center">{{ post.comment_count }}</td>
+                <td><small>{{ post.created_at.strftime("%Y-%m-%d") }}</small></td>
+                <td class="text-end text-nowrap">
+                    <a href="/posts/{{ post.id }}" class="btn btn-sm btn-outline-secondary">View</a>
+                    <a href="/posts/{{ post.id }}/edit" class="btn btn-sm btn-outline-primary">Edit</a>
+                    <a href="/posts/{{ post.id }}/delete" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    No posts yet. <a href="/posts/new">Create the first one</a>.
+</div>
+{% endif %}
+{% endblock %}

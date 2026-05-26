@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} — WordPress MVC{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="/posts" class="text-decoration-none">← Back to posts</a>
+</div>
+
+<article class="mb-5">
+    <h1>{{ post.title }}</h1>
+    <p class="text-muted">
+        by <strong>{{ post.author_username }}</strong>
+        ·
+        {% if post.status == "published" %}
+            <span class="badge bg-success">Published</span>
+        {% else %}
+            <span class="badge bg-secondary">{{ post.status }}</span>
+        {% endif %}
+        ·
+        {{ post.created_at.strftime("%Y-%m-%d %H:%M") }}
+    </p>
+
+    <div class="mb-3">
+        {% for cat in post.category_names %}
+            <span class="badge bg-info text-dark">{{ cat }}</span>
+        {% endfor %}
+        {% for tag in post.tag_names %}
+            <span class="badge bg-light text-dark border">#{{ tag }}</span>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <p style="white-space: pre-wrap;">{{ post.body }}</p>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="/posts/{{ post.id }}/edit" class="btn btn-primary">Edit</a>
+        <a href="/posts/{{ post.id }}/delete" class="btn btn-outline-danger">Delete</a>
+    </div>
+</article>
+
+<section>
+    <h3>Comments <small class="text-muted fs-6">({{ post.comments|length }})</small></h3>
+    {% if post.comments %}
+        {% for comment in post.comments %}
+        <div class="card mb-2 {% if not comment.approved %}border-warning{% endif %}">
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between">
+                    <strong>{{ comment.author_name }}</strong>
+                    <small class="text-muted">
+                        {{ comment.created_at.strftime("%Y-%m-%d %H:%M") }}
+                        {% if not comment.approved %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% endif %}
+                    </small>
+                </div>
+                <div class="mt-1">{{ comment.content }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No comments yet.</p>
+    {% endif %}
+</section>
+{% endblock %}
