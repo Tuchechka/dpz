@@ -1,0 +1,53 @@
+fiscal_year,department,account_code,account_description,budget_amount,actual_amount
+2023,Police Department,5101,Salaries and Wages,234500000.00,231245000.00
+2023,Police Department,5102,Overtime Pay,18500000.00,21340000.00
+2023,Police Department,5201,Equipment Purchases,8500000.00,7892000.00
+2023,Police Department,5301,Vehicle Maintenance,4200000.00,4458000.00
+2023,Police Department,5401,Training and Development,2300000.00,2105000.00
+2023,Fire Department,5101,Salaries and Wages,198000000.00,196830000.00
+2023,Fire Department,5102,Overtime Pay,15200000.00,17580000.00
+2023,Fire Department,5201,Equipment Purchases,12000000.00,11245000.00
+2023,Fire Department,5301,Vehicle Maintenance,6500000.00,6890000.00
+2023,Fire Department,5401,Training and Development,1800000.00,1654000.00
+2023,Sanitation Services,5101,Salaries and Wages,68500000.00,67980000.00
+2023,Sanitation Services,5201,Equipment Purchases,15600000.00,15123000.00
+2023,Sanitation Services,5301,Vehicle Maintenance,8900000.00,9421000.00
+2023,Sanitation Services,5501,Disposal Contracts,42000000.00,43560000.00
+2023,Library,5101,Salaries and Wages,32000000.00,31840000.00
+2023,Library,5601,Books and Materials,5800000.00,5234000.00
+2023,Library,5301,Facility Maintenance,3200000.00,3450000.00
+2023,Parks and Recreation,5101,Salaries and Wages,54000000.00,53670000.00
+2023,Parks and Recreation,5201,Equipment Purchases,4500000.00,4123000.00
+2023,Parks and Recreation,5301,Grounds Maintenance,18000000.00,18920000.00
+2023,Parks and Recreation,5701,Program Supplies,3800000.00,3567000.00
+2023,Public Works,5101,Salaries and Wages,42000000.00,41560000.00
+2023,Public Works,5301,Street Maintenance,67000000.00,69120000.00
+2023,Public Works,5302,Drainage Systems,18000000.00,17234000.00
+2023,Transportation,5101,Salaries and Wages,28000000.00,27890000.00
+2023,Transportation,5303,Signal Maintenance,9200000.00,9876000.00
+2023,Transportation,5304,Sign Maintenance,3400000.00,3145000.00
+2023,Code Compliance,5101,Salaries and Wages,21000000.00,20780000.00
+2023,Code Compliance,5401,Training and Development,800000.00,756000.00
+2023,Aviation Department,5101,Salaries and Wages,38000000.00,37650000.00
+2023,Aviation Department,5301,Facility Maintenance,12000000.00,12450000.00
+2023,Aviation Department,5201,Equipment Purchases,6700000.00,6234000.00
+2024,Police Department,5101,Salaries and Wages,245000000.00,243120000.00
+2024,Police Department,5102,Overtime Pay,19500000.00,22150000.00
+2024,Police Department,5201,Equipment Purchases,9200000.00,8765000.00
+2024,Police Department,5301,Vehicle Maintenance,4500000.00,4623000.00
+2024,Fire Department,5101,Salaries and Wages,208000000.00,206540000.00
+2024,Fire Department,5102,Overtime Pay,16000000.00,18230000.00
+2024,Fire Department,5201,Equipment Purchases,13500000.00,12876000.00
+2024,Fire Department,5401,Training and Development,2000000.00,1923000.00
+2024,Sanitation Services,5101,Salaries and Wages,72000000.00,71450000.00
+2024,Sanitation Services,5501,Disposal Contracts,45000000.00,46780000.00
+2024,Library,5101,Salaries and Wages,33500000.00,33210000.00
+2024,Library,5601,Books and Materials,6100000.00,5678000.00
+2024,Parks and Recreation,5101,Salaries and Wages,57000000.00,56340000.00
+2024,Parks and Recreation,5301,Grounds Maintenance,19500000.00,20120000.00
+2024,Public Works,5101,Salaries and Wages,44500000.00,44120000.00
+2024,Public Works,5301,Street Maintenance,72000000.00,74560000.00
+2024,Transportation,5101,Salaries and Wages,29500000.00,29230000.00
+2024,Transportation,5303,Signal Maintenance,9800000.00,10340000.00
+2024,Aviation Department,5101,Salaries and Wages,40000000.00,39780000.00
+2024,Aviation Department,5301,Facility Maintenance,13000000.00,13567000.00

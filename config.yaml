@@ -1,0 +1,21 @@
+# Конфігурація додатку. Зміна стратегії виводу -- ТУТ, без правок коду.
+
+reader:
+  csv_path: ./data/dallas_budget.csv
+
+output:
+  # Можливі значення: console | file | kafka | redis
+  strategy: console
+
+  file:
+    path: ./output/budget_records.jsonl
+
+  kafka:
+    bootstrap_servers: localhost:9092
+    topic: dallas-budget
+
+  redis:
+    host: localhost
+    port: 6379
+    db: 0
+    key_prefix: "budget:"
